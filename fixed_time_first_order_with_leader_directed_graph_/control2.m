@@ -1,5 +1,4 @@
-function [sys,x0,str,ts] = control(t,x,u,flag,A,n,a,b,uu,v) % 邻接矩阵A，智能体数n
-
+function [sys,x0,str,ts] = control2(t,x,u,flag,n,aa,bb,K,p,q) % 跟随者数，滑膜参数
 switch flag,
     
     case 0, %系统初始化
@@ -12,7 +11,7 @@ switch flag,
     sys=mdlUpdate(t,x,u);
 
     case 3, %系统的输出
-    sys=mdlOutputs(t,x,u,A,n,a,b,uu,v);
+    sys=mdlOutputs(t,x,u,n,aa,bb,K,p,q);
 
     case 4, %变离散采样时间，用于计算下一个采样时刻的绝对时间，ts = [-2 0];
     sys=mdlGetTimeOfNextVarHit(t,x,u);
@@ -52,24 +51,13 @@ function sys=mdlUpdate(t,x,u)
 sys = [];
  
 %系统的输出
-function sys=mdlOutputs(t,x,u,A,n,a,b,uu,v) 
+function sys=mdlOutputs(t,x,u,n,aa,bb,K,p,q)
 
-%算法1
-% dx = zeros(n,1);
-% for i=1:n
-%     for j=1:n
-%         dx(i) = dx(i) + a*sig(A(i,j)*(u(j)-u(i)),uu) + b*sig(A(i,j)*(u(j)-u(i)),v);
-%     end
-% end
-%% 算法2
+%控制率
 dx = zeros(n,1);
 for i=1:n
-    for j=1:n
-        dx(i) = dx(i) + A(i,j)*(u(j)-u(i));
-    end
-    dx(i) = a*sig(dx(i),uu) + b*sig(dx(i),v);
+    dx(i) = -(aa+K)*sig(u(i),p) -(bb+K)*sig(u(i),q);
 end
-
 sys = dx;
  
 %变离散采样时间
